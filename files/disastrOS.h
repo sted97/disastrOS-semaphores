@@ -28,6 +28,15 @@ void disastrOS_preempt();
 void disastrOS_spawn(void (*f)(void*), void* args );
 void disastrOS_shutdown();
 
+//semafori
+int disastrOS_semOpen(int id, int count);
+
+int disastrOS_semClose(int desc);
+
+int disastrOS_semWait(int desc);
+
+int disastrOS_semPost(int desc);
+
 // timers
 void disastrOS_sleep(int);
 
