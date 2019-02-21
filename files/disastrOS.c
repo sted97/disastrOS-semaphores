@@ -187,17 +187,18 @@ void disastrOS_start(void (*f)(void*), void* f_args, char* logfile){
 
   // fill these with the syscall handlers
 
-  //changed
-  syscall_vector[DSOS_CALL_SEMOPEN]      = internal_semOpen;
-  syscall_numarg[DSOS_CALL_SEMOPEN]      = 2;
+  //gestori delle syscall semOpen, semClose, semPost, semWait
+  syscall_vector[DSOS_CALL_SEMOPEN]      = internal_semOpen; //syscall che servirà la richiesta di semOpen (si trova nell' 11esima posizione dell'Interrupt Vector)
+  syscall_numarg[DSOS_CALL_SEMOPEN]      = 2; //mi servono due parametri perchè per allocare il semaforo con la Semaphore_alloc
+											  //devo passargli come secondo parametro Count
 
-  syscall_vector[DSOS_CALL_SEMCLOSE]      = internal_semClose;
+  syscall_vector[DSOS_CALL_SEMCLOSE]      = internal_semClose;//syscall che servirà la richiesta di semClose (si trova nella 12esima posizione dell'Interrupt Vector)
   syscall_numarg[DSOS_CALL_SEMCLOSE]      = 1;
 
-  syscall_vector[DSOS_CALL_SEMPOST]      = internal_semPost;
-  syscall_numarg[DSOS_CALL_SEMPOST]      = 1;
+  syscall_vector[DSOS_CALL_SEMPOST]      = internal_semPost;//syscall che servirà la richiesta di semPost (si trova nella 13esima posizione dell'Interrupt Vector)
+  syscall_numarg[DSOS_CALL_SEMPOST]      = 2;
 
-  syscall_vector[DSOS_CALL_SEMWAIT]      = internal_semWait;
+  syscall_vector[DSOS_CALL_SEMWAIT]      = internal_semWait;//syscall che servirà la richiesta di semWait (si trova nella 14esima posizione dell'Interrupt Vector)
   syscall_numarg[DSOS_CALL_SEMWAIT]      = 1;
 
   // setup the scheduling lists
@@ -264,21 +265,21 @@ void disastrOS_start(void (*f)(void*), void* f_args, char* logfile){
   setcontext(&running->cpu_state);
 }
 
-//gestori semafori
-int disastrOS_semOpen(int id, int count){
-    return disastrOS_syscall(DSOS_CALL_SEMOPEN, id, count);
+//gestori funzioni semafori semOpen, semWait, semPost, semClose
+int disastrOS_semOpen(int semnum, int contatore){
+    return disastrOS_syscall(DSOS_CALL_SEMOPEN, semnum, contatore);
 }
 
-int disastrOS_semClose(int desc){
-    return disastrOS_syscall(DSOS_CALL_SEMCLOSE, desc);
+int disastrOS_semClose(int semnum){
+    return disastrOS_syscall(DSOS_CALL_SEMCLOSE, semnum);
 }
 
-int disastrOS_semWait(int desc){
-    return disastrOS_syscall(DSOS_CALL_SEMWAIT, desc);
+int disastrOS_semWait(int semnum){
+    return disastrOS_syscall(DSOS_CALL_SEMWAIT, semnum);
 }
 
-int disastrOS_semPost(int desc){
-    return disastrOS_syscall(DSOS_CALL_SEMPOST, desc);
+int disastrOS_semPost(int semnum){
+    return disastrOS_syscall(DSOS_CALL_SEMPOST, semnum);
 }
 
 int disastrOS_fork(){
@@ -331,8 +332,8 @@ int disastrOS_destroyResource(int resource_id) {
 
 
 void disastrOS_printStatus(){
-  printf("\n*********************** DisastrOS Status ***********************\n");
-  printf("Running: ");
+  printf("\n*********************** STATO DI DisastrOS ***********************\n");
+  printf("In esecuzione:");
   if (running)
     PCB_print(running);
   printf("\n");
@@ -340,13 +341,13 @@ void disastrOS_printStatus(){
   //TimerList_print(&timer_list);
   //printf("\nResources: ");
   //ResourceList_print(&resources_list);
-  printf("\nSemaphores: ");
+  printf("\nLista dei semafori:");
   SemaphoreList_print(&semaphores_list);
-  printf("\nReady: ");
+  printf("\nCoda di ready:");
   PCBList_print(&ready_list);
-  printf("\nWaiting: ");
+  printf("\nIn attesa:");
   PCBList_print(&waiting_list);
-  printf("\nZombie: ");
+  printf("\nZombie:");
   PCBList_print(&zombie_list);
-  printf("\n****************************************************************\n\n");
+  printf("\n******************************************************************\n\n");
 };

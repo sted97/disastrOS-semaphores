@@ -29,13 +29,13 @@ void disastrOS_spawn(void (*f)(void*), void* args );
 void disastrOS_shutdown();
 
 //semafori
-int disastrOS_semOpen(int id, int count);
+int disastrOS_semOpen(int semnum, int contatore);
 
-int disastrOS_semClose(int desc);
+int disastrOS_semClose(int semnum);
 
-int disastrOS_semWait(int desc);
+int disastrOS_semWait(int semnum);
 
-int disastrOS_semPost(int desc);
+int disastrOS_semPost(int semnum);
 
 // timers
 void disastrOS_sleep(int);

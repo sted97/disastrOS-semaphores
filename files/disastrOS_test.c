@@ -6,8 +6,8 @@
 #include "disastrOS.h"
 
 
-#define SEMAFORO_PRODUTTORI 1
-#define SEMAFORO_CONSUMATORI 2
+#define ID_SEMAFORO_PRODUTTORI 1
+#define ID_SEMAFORO_CONSUMATORI 2
 #define NUMERO_PROCESSI 10
 
 // we need this to handle the sleep state
@@ -27,8 +27,8 @@ void childFunction(void* args){
   printf("Apro risorsa con File Descriptor fd=%d\n", fd);
 
   printf("Apro i semafori\n");
-  disastrOS_semOpen(SEMAFORO_PRODUTTORI, NUMERO_PROCESSI); //apro il semaforo per i produttori con id 1
-  disastrOS_semOpen(SEMAFORO_CONSUMATORI, 0); //apro il semaforo per i consumatori con id i
+  disastrOS_semOpen(ID_SEMAFORO_PRODUTTORI, NUMERO_PROCESSI); //apro il semaforo per i produttori con id 1 e contatore a 10 (numero di processi)
+  disastrOS_semOpen(ID_SEMAFORO_CONSUMATORI, 0); //apro il semaforo per i consumatori con id 2 e contatore a 0
   
   printf("Terminazione...\n");
   disastrOS_exit(disastrOS_getpid()+1); //figlio terminato

@@ -95,7 +95,7 @@ void DescriptorPtrList_print(ListHead* l){
   printf("[");
   while(aux){
     DescriptorPtr* d=(DescriptorPtr*)aux;
-    printf("(pid: %d, fd: %d, rid:%d)",
+    printf("\n				(pid:%d, fd:%d, sem_id:%d)",
 	   d->descriptor->pcb->pid,
 	   d->descriptor->fd,
 	   d->descriptor->resource->id);
@@ -103,5 +103,5 @@ void DescriptorPtrList_print(ListHead* l){
       printf(", ");
     aux=aux->next;
   }
-  printf("]");
+  printf("] ");
 }
