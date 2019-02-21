@@ -1,61 +1,26 @@
-GOALS OF THE PROJECT:
+Semaphores in DisastrOS, GOALS OF THE PROJECT:
+Implement the following system calls in DisastrOS
 
->>>Semaphores in disastrOS [1]
-   //implement the following system calls in DisastrOS
-   // creates a semaphore in the system, having num semnum
-   // the semaphore is accessible throughuot the entire system
-   // by its id.
-   // on success, the function call returns semnum (>=0);
-   // in failure the function returns an error code <0
-   - int s=DisastrOS_semOpen(int semnum)
+- int s=DisastrOS_semOpen(int semnum)
+   creates a semaphore in the system, having num semnum
+   the semaphore is accessible throughuot the entire system
+   by its id.
+   on success, the function call returns semnum (>=0);
+   in failure the function returns an error code (negative value).
 
-   //releases from an application the given
-   // returns 0 on success
-   // returns an error code if the semaphore is not owned by the application
-   - int DisastrOS_semClose(int semnum)
+- int DisastrOS_semClose(int semnum)
+   releases from an application the given
+   returns 0 on success
+   returns an error code if the semaphore is not owned by the application
 
-   //decrements the given semaphore
-   //if the semaphore is 0, the caller is put onto wait
-   //returns an error code
-   - int DisastrOS_semWait(int semnum);
 
-   //increments the given semaphore
-   //if the semaphore was at 0, and some other thread was waiting
-   //the thread is resumed
-   //returns 0 on success, an error code on failure 
-   int DisastrOS_semPost(int semnum);
+- int DisastrOS_semWait(int semnum);
+   decrements the given semaphore
+   if the semaphore is 0, the caller is put onto wait
+   returns an error code
 
-In this folder
-
-- resource management system
-  we implemented the infrastructure to handle descriptors and files
-- a "resource is uniquely identified in the system
-  it can be created, opened or closed by one or more files
-  it keeps track of who is usingit
-- a process keeps track of the open resources through descriptors
-
-1. the resource structures and allocation
-   files: disastrOS_resource.*
-
-2. the descriptor structures and allocation
-   files: disastrOS_resource.*
-
-3. the PCB is modified by adding a list of open descriptors
-   files: pcb.h, pcb.c
-
-4. the resources appear in the global variables
-   files: disastrOS.c
-
-5. new system calls to manage resources
-   files:
-   - disastrOS_syscalls.h
-   - disastrOS_resource_open.c
-   - disastrOS_resource_close.c
-   - disastrOS_resource_destroy.c
-
-6. new syscalls are added to the infrastructure
-   files:
-   - disastrOS.c
-     functions:
-     -disastrOS_start
-
+- int DisastrOS_semPost(int semnum);
+   increments the given semaphore
+   if the semaphore was at 0, and some other thread was waiting
+   the thread is resumed
+   returns 0 on success, an error code on failure
