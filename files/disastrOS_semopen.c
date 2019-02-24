@@ -9,12 +9,12 @@
 #include "disastrOS_constants.h"
 
 //SEMOPEN:
-//La syscall semOpen crea un semaforo nel sistema con uno specifico semnum ed è accessibile proprio attraverso di esso.
+//La syscall semOpen(semnum) crea un semaforo nel sistema con quello specifico semnum ed è accessibile proprio attraverso di esso.
 //In caso di successo la funzione ritorna semnum (un valore >=0);
 //In caso di errore la funzione ritorna un valore negativo (in questo caso DSOS_ESYSCALL_OUT_OF_RANGE = -3 [vedi disastrOS_constants.h])
 
 void internal_semOpen(){
-	int id = running->syscall_args[0]; //running è una struttura dati di tipo PCB (vedi pcb.h)
+	int id = running->syscall_args[0]; //mi prendo l'id [running è una struttura dati di tipo PCB (vedi pcb.h)]
     
     int contatore = running->syscall_args[1]; //il secondo argomento è un contatore, mi serve perchè devo passarlo alla semaphore_alloc che come
 											  //secondo parametro vuole un contatore
@@ -41,8 +41,7 @@ void internal_semOpen(){
     desc->ptr = sem_desc_ptr; //setto il puntatore bella struct del descrittore
     List_insert(&semaforo->descriptors, semaforo->descriptors.last, (ListItem*) sem_desc_ptr); //inserisco il puntatore nella lista dei puntatori dei descrittori
 
-    running->syscall_retvalue = desc->fd; //imposto come valore di ritorno del processo running il fd(File Descriptor) di desc
-    
+    running->syscall_retvalue = desc->fd; //in caso di successo, imposto come valore di ritorno del processo running il fd(File Descriptor) di desc
     
     return;
 }
