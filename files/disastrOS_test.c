@@ -27,15 +27,18 @@ void childFunction(void* args){
   printf("Apro risorsa con File Descriptor fd=%d\n", fd);
 
   printf("Apro i semafori\n");
-  int id_sem1=disastrOS_semOpen(ID_SEMAFORO_PRODUTTORI, NUMERO_PROCESSI); //apro il semaforo per i produttori con id 1 e contatore a 10 (numero di processi)
-  int id_sem2=disastrOS_semOpen(ID_SEMAFORO_CONSUMATORI, 0); //apro il semaforo per i consumatori con id 2 e contatore a 0
+  int semaforo_produttori=disastrOS_semOpen(ID_SEMAFORO_PRODUTTORI, NUMERO_PROCESSI); //apro il semaforo per i produttori con id 1 e contatore a 10 (numero di processi)
+  int semaforo_consumatori=disastrOS_semOpen(ID_SEMAFORO_CONSUMATORI, 0); //apro il semaforo per i consumatori con id 2 e contatore a 0
   
+
+  disastrOS_semPost(semaforo_consumatori);
   printf("Terminazione...\n");
+  
   
   /*
   printf("Chiudo i semafori\n");
-  disastrOS_semClose(id_sem1);
-  disastrOS_semClose(id_sem2);
+  disastrOS_semClose(semaforo_produttori);
+  disastrOS_semClose(semaforo_consumatori);
   */
   
   disastrOS_exit(disastrOS_getpid()+1); //figlio terminato
