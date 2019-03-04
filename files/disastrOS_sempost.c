@@ -16,6 +16,7 @@ void internal_semPost(){
     int id = running->syscall_args[0]; //mi prendo l'id [running è una struttura dati di tipo PCB (vedi pcb.h)]
 
     SemDescriptor* desc = SemDescriptorList_byFd(&running->sem_descriptors, id); //mi prendo il descrittore del semaforo a partire dall'id attraverso la funzione SemDescriptorList_byFd (vedi disastrOS_semdescriptor.c)
+	GESTORE_ERRORI(desc, DSOS_ESEMPOST); //gestisco eventuali errori in caso la semPOst fallisca
 
     Semaphore* semaforo = desc->semaphore; //semaforo associato al descrittore
 
@@ -26,7 +27,7 @@ void internal_semPost(){
     
     if (semaforo->count <= 0) { //se il contatore del semaforo ha valore minore o uguale a zero
         List_insert(&ready_list, ready_list.last, (ListItem*) running); //aggiungo il processo running nella ready list che è una lista di tipo ListHead dichiarata in disastrOs_globals.h
-        
+
         desc_ptr = (SemDescriptorPtr*) List_detach(&semaforo->waiting_descriptors, (ListItem*) semaforo->waiting_descriptors.first); //rimuovo il primo descrittore del semaforo dalla lista dei descrittori in attesa
         List_insert(&semaforo->descriptors, semaforo->descriptors.last, (ListItem*) desc_ptr);
         List_detach(&waiting_list, (ListItem*) desc_ptr->descriptor->pcb); //rimuovo il processo corrispondente a desc_ptr dalla lista di attesa

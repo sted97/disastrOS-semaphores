@@ -15,6 +15,9 @@ void internal_semClose(){
 	int id = running->syscall_args[0]; //mi prendo l'id
 	
 	SemDescriptor* desc = SemDescriptorList_byFd(&running-> sem_descriptors, id); //mi prendo il descrittore del semaforo a partire dall'id attraverso la funzione SemDescriptorList_byFd (vedi disastrOS_semdescriptor.c)
+
+    GESTORE_ERRORI(desc, DSOS_ESEMCLOSE); //gestisco eventuali errori in caso la semClose fallisca
+
     List_detach(&running->sem_descriptors, (ListItem*)desc); //elimino l'elemento con descrittore 'desc' dalla lista 'sem_descriptors' del processo running attraverso la funzione List_detach (vedi linked_list.c)
 
     Semaphore* semaforo = desc->semaphore; //semaforo associato al descrittore

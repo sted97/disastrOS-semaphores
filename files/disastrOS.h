@@ -13,6 +13,14 @@
 
 #endif //_DISASTROS_DEBUG_
 
+#define GESTORE_ERRORI(condizione, errore) do{      	  \
+    if (!condizione) {                                    \
+        fprintf(stderr, ">ERRORE: errno = %d\n", errore); \
+        running->syscall_retvalue = errore;               \
+        return;                                           \
+    }                                                     \
+}while (0);
+
 // initializes the structures and spawns a fake init process
 void disastrOS_start(void (*f)(void*), void* args, char* logfile);
 

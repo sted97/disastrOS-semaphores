@@ -11,7 +11,7 @@
 //SEMOPEN:
 //La syscall semOpen(semnum) crea un semaforo nel sistema con quello specifico semnum ed è accessibile proprio attraverso di esso.
 //In caso di successo la funzione ritorna semnum (un valore >=0);
-//In caso di errore la funzione ritorna un valore negativo (in questo caso DSOS_ESYSCALL_OUT_OF_RANGE = -3 [vedi disastrOS_constants.h])
+//In caso di errore la funzione ritorna un valore negativo (in questo caso DSOS_ESEMOPEN = -14 [vedi disastrOS_constants.h])
 
 void internal_semOpen(){
 	int id = running->syscall_args[0]; //mi prendo l'id [running è una struttura dati di tipo PCB (vedi pcb.h)]
@@ -23,6 +23,8 @@ void internal_semOpen(){
 																	 //inoltre semaphores_list è una variabile globale dichiarata in globals.h ed inizializzata in disastrOS.c
     if (semaforo==0) { //se non c'è
         semaforo = Semaphore_alloc(id, contatore); //lo alloco attraverso uno SLAB allocator(vedi disastrOS_semaphores.c)
+        GESTORE_ERRORI(semaforo, DSOS_ESEMOPEN); //gestisco l'errore in caso la semOpen fallisca
+
         printf("[DisastrOS] E' stato allocato un semaforo con id=%d\n", id);
         if(semaforo==0) printf("Impossibile allocare il semaforo/n");
         List_insert( &semaphores_list, semaphores_list.last, (ListItem*)semaforo); //lo inserisco nella lista dei semafori
