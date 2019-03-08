@@ -4,17 +4,119 @@
 
 #include "disastrOS_constants.h"
 #include "disastrOS.h"
+#include <errno.h>
+#include <stdlib.h>
 
 
 #define ID_SEMAFORO_PRODUTTORI 1
 #define ID_SEMAFORO_CONSUMATORI 2
+#define ID_SEMAFORO_CONDIVISO 3
 #define NUMERO_PROCESSI 7
 #define ITERAZIONI 7
 
 
+#define PRODUTTORE_CONSUMATORE
+//#define SOMMA
+
+#define N 10 // number of threads
+#define M 2 // number of iterations per thread
+#define V 1 // value added to the balance by each thread at each iteration
+
+unsigned long int shared_variable;
+int n = N, m = M, v = V;
+int num_processi=NUMERO_PROCESSI;
+int iterazioni=ITERAZIONI;
+int semaforo_condiviso;
+
+
+#ifdef SOMMA
+void childFunction(void* args){
+    int i;
+    for (i = 0; i < m; i++) {
+      disastrOS_semWait(semaforo_condiviso);;
+
+      disastrOS_printStatus();
+
+      shared_variable += 1;
+
+      disastrOS_semPost(semaforo_condiviso);
+
+      disastrOS_printStatus();
+    }
+
+
+  printf("Terminazione...\n");
+
+  disastrOS_exit(disastrOS_getpid()); //figlio terminato
+}
+
+
+void initFunction(void* args) {
+  printf("Ciao, Sono il processo Init! Ed ho appena iniziato :) \n");
+  disastrOS_printStatus();
+
+  printf("Ora genero 10 nuovi processi...\n\n");
+  int alive_children=0; //figli in vita inizialmente 0
+
+  for (int i=0; i<n; ++i) { //creo 10 processi
+    int type=0;
+    int mode=DSOS_CREATE;
+    printf("Apro la risorsa %d con type=%d e mode=%d (e la creo se necessario)\n", i, type, mode);
+    int fd=disastrOS_openResource(i,type,mode);
+    printf("Aperta risorsa %d con file Descriptor fd=%d\n", i, fd);
+    disastrOS_spawn(childFunction, 0); //eseguo la funzione childFunction
+    printf("Creato figlio %d\n\n", i+1);
+    alive_children++; //incremento il numero dei figli in vita
+  }
+
+  disastrOS_printStatus();
+
+  int retval;
+  int pid;
+  while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){ //finchè c'è almeno un processo in vita o il main sta attendendo la terminazione per un figlio
+    printf("[INIT] Figlio %d terminato con valore di ritorno:%d, processi in vita: %d \n\n",
+    pid, retval, alive_children);
+
+ 	  alive_children--;  //decremento il numero di figli in vita
+  }
+
+
+  unsigned long int expected_value = (unsigned long int)n*m*v;
+  printf("Il valore della variabile condivisa è: %lu e quello atteso è: %lu\n", shared_variable, expected_value);
+  printf("SPEGNIMENTO.\n");
+
+  disastrOS_shutdown(); //termino il programma
+}
+
+int main(int argc, char** argv){
+  if (argc > 1) n = atoi(argv[1]);
+  if (argc > 2) m = atoi(argv[2]);
+  if (argc > 3) v = atoi(argv[3]);
+
+  char* logfilename=0;
+  if (argc>1) {
+    logfilename=argv[1];
+  }
+
+  shared_variable=0;
+  // we create the init process processes
+  // the first is in the running variable
+  // the others are in the ready queue
+
+  // spawn an init process
+  printf("Si parte!!!\n");
+
+  disastrOS_start(initFunction, 0, logfilename); //avvia il programma a partire dalla funzione initFunction
+  return 0;
+}
+#endif
+
+
+
+#ifdef PRODUTTORE_CONSUMATORE
 void produttore(int semaforo_produttori, int semaforo_consumatori){
   int i;
-  for (i = 0; i < ITERAZIONI; i++){
+  for (i = 0; i < iterazioni; i++){
     disastrOS_semWait(semaforo_produttori);
     printf("[PRODOTTO]\n");
     disastrOS_semPost(semaforo_consumatori);
@@ -24,7 +126,7 @@ void produttore(int semaforo_produttori, int semaforo_consumatori){
 
 void consumatore(int semaforo_produttori, int semaforo_consumatori){
   int i;
-  for (i = 0; i <ITERAZIONI; i++){
+  for (i = 0; i <iterazioni; i++){
     disastrOS_semWait(semaforo_consumatori);
     printf("[CONSUMATO]\n");
     disastrOS_semPost(semaforo_produttori);
@@ -87,7 +189,7 @@ void initFunction(void* args) {
   printf("Ora genero 8 nuovi processi...\n\n");
   int alive_children=0; //figli in vita inizialmente 0
 
-  for (int i=0; i<NUMERO_PROCESSI; ++i) { //creo 10 processi
+  for (int i=0; i<num_processi; ++i) { //creo 10 processi
     int type=0;
     int mode=DSOS_CREATE;
     printf("Apro la risorsa %d con type=%d e mode=%d (e la creo se necessario)\n", i, type, mode);
@@ -103,10 +205,10 @@ void initFunction(void* args) {
   int pid;
   while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){ //finchè c'è almeno un processo in vita o il main sta attendendo la terminazione per un figlio
     printf("[INIT] Figlio %d terminato con valore di ritorno:%d, processi in vita: %d \n\n",
-	   pid, retval, alive_children);
+     pid, retval, alive_children);
     disastrOS_printStatus(); //stampo lo stato del sistema operativo
 
-	  alive_children--;  //decremento il numero di figli in vita
+    alive_children--;  //decremento il numero di figli in vita
   }
 
   disastrOS_printStatus(); //stampo lo stato del sistema operativo
@@ -116,6 +218,9 @@ void initFunction(void* args) {
 }
 
 int main(int argc, char** argv){
+  if (argc > 1) num_processi = atoi(argv[1]);
+  if (argc > 2) iterazioni = atoi(argv[2]);
+
   char* logfilename=0;
   if (argc>1) {
     logfilename=argv[1];
@@ -129,3 +234,4 @@ int main(int argc, char** argv){
   disastrOS_start(initFunction, 0, logfilename); //avvia il programma a partire dalla funzione initFunction
   return 0;
 }
+#endif
