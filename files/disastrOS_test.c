@@ -8,7 +8,29 @@
 
 #define ID_SEMAFORO_PRODUTTORI 1
 #define ID_SEMAFORO_CONSUMATORI 2
-#define NUMERO_PROCESSI 10
+#define NUMERO_PROCESSI 7
+#define ITERAZIONI 7
+
+
+void produttore(int semaforo_produttori, int semaforo_consumatori){
+  int i;
+  for (i = 0; i < ITERAZIONI; i++){
+    disastrOS_semWait(semaforo_produttori);
+    printf("[PRODOTTO]\n");
+    disastrOS_semPost(semaforo_consumatori);
+  }
+}
+
+
+void consumatore(int semaforo_produttori, int semaforo_consumatori){
+  int i;
+  for (i = 0; i <ITERAZIONI; i++){
+    disastrOS_semWait(semaforo_consumatori);
+    printf("[CONSUMATO]\n");
+    disastrOS_semPost(semaforo_produttori);
+  }
+}
+
 
 // we need this to handle the sleep state
 void sleeperFunction(void* args){
@@ -26,24 +48,34 @@ void childFunction(void* args){
   int fd=disastrOS_openResource(disastrOS_getpid(), type, mode);
   printf("Apro risorsa con File Descriptor fd=%d\n", fd);
 
-  printf("Apro i semafori\n");
+  printf("Apro i semafori\n\n");
   int semaforo_produttori=disastrOS_semOpen(ID_SEMAFORO_PRODUTTORI, NUMERO_PROCESSI); //apro il semaforo per i produttori con id 1 e contatore a 10 (numero di processi)
   int semaforo_consumatori=disastrOS_semOpen(ID_SEMAFORO_CONSUMATORI, 0); //apro il semaforo per i consumatori con id 2 e contatore a 0
-  
 
-  disastrOS_semPost(semaforo_consumatori);
-  disastrOS_semWait(semaforo_produttori);
+
+  if (disastrOS_getpid() % 2 == 0){
+    produttore(semaforo_produttori, semaforo_consumatori);
+    printf("\n");
+  }
+
+  else{
+    consumatore(semaforo_produttori, semaforo_consumatori);
+    printf("\n");
+
+  }
+
+
+  disastrOS_printStatus();
 
   printf("Terminazione...\n");
   
   
-  /*
   printf("Chiudo i semafori\n");
   disastrOS_semClose(semaforo_produttori);
   disastrOS_semClose(semaforo_consumatori);
-  */
   
-  disastrOS_exit(disastrOS_getpid()+1); //figlio terminato
+
+  disastrOS_exit(disastrOS_getpid()); //figlio terminato
 }
 
 
@@ -51,10 +83,11 @@ void initFunction(void* args) {
   disastrOS_printStatus();
   printf("Ciao, Sono il processo Init! Ed ho appena iniziato :) \n");
   disastrOS_spawn(sleeperFunction, 0); //la spawn crea una nuova istanza del processo running e lo mette nella ready list eseguendo la funzione passata come primo parametro
-  printf("Ora genero 10 nuovi processi...\n\n");
+
+  printf("Ora genero 8 nuovi processi...\n\n");
   int alive_children=0; //figli in vita inizialmente 0
 
-  for (int i=0; i<10; ++i) { //creo 10 processi
+  for (int i=0; i<NUMERO_PROCESSI; ++i) { //creo 10 processi
     int type=0;
     int mode=DSOS_CREATE;
     printf("Apro la risorsa %d con type=%d e mode=%d (e la creo se necessario)\n", i, type, mode);
@@ -69,15 +102,16 @@ void initFunction(void* args) {
   int retval;
   int pid;
   while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){ //finchè c'è almeno un processo in vita o il main sta attendendo la terminazione per un figlio
-	disastrOS_printStatus(); //stampo lo stato del sistema operativo
     printf("[INIT] Figlio %d terminato con valore di ritorno:%d, processi in vita: %d \n\n",
 	   pid, retval, alive_children);
-	alive_children--;  //decremento il numero di figli in vita
+    disastrOS_printStatus(); //stampo lo stato del sistema operativo
+
+	  alive_children--;  //decremento il numero di figli in vita
   }
-  
-  
+
   disastrOS_printStatus(); //stampo lo stato del sistema operativo
   printf("SPEGNIMENTO.\n");
+
   disastrOS_shutdown(); //termino il programma
 }
 
@@ -89,7 +123,7 @@ int main(int argc, char** argv){
   // we create the init process processes
   // the first is in the running variable
   // the others are in the ready queue
-  printf("Il puntatore a funzione è: %p\n", childFunction); //puntatore alla funzione childFunction
+
   // spawn an init process
   printf("Si parte!!!\n");
   disastrOS_start(initFunction, 0, logfilename); //avvia il programma a partire dalla funzione initFunction

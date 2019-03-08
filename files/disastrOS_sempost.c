@@ -6,6 +6,7 @@
 #include "disastrOS_semaphore.h"
 #include "disastrOS_semdescriptor.h"
 
+
 //SEMPOST:
 //La syscall semPost(semnum) sblocca il semaforo con numero "semnum", cioè:
 //-Incrementa di 1 il valore del contatore del semaforo
@@ -14,6 +15,7 @@
 
 void internal_semPost(){
     int id = running->syscall_args[0]; //mi prendo l'id [running è una struttura dati di tipo PCB (vedi pcb.h)]
+
 
     SemDescriptor* desc = SemDescriptorList_byFd(&running->sem_descriptors, id); //mi prendo il descrittore del semaforo a partire dall'id attraverso la funzione SemDescriptorList_byFd (vedi disastrOS_semdescriptor.c)
 	GESTORE_ERRORI(desc, DSOS_ESEMPOST); //gestisco eventuali errori in caso la semPOst fallisca
