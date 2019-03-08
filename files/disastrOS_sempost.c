@@ -9,7 +9,7 @@
 //SEMPOST:
 //La syscall semPost(semnum) sblocca il semaforo con numero "semnum", cioè:
 //-Incrementa di 1 il valore del contatore del semaforo
-//-Se il valore diventa > 0  qualche altro thread bloccato sulla sem_wait puo' continuare l'esecuzione
+//-Se il valore è <= 0 rimuove un processo dalla coda di ready e lo mette in esecuzione
 //Restituisce 0 in caso di successo e -1 in caso di errore
 
 void internal_semPost(){

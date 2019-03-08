@@ -32,6 +32,8 @@ void childFunction(void* args){
   
 
   disastrOS_semPost(semaforo_consumatori);
+  disastrOS_semWait(semaforo_produttori);
+
   printf("Terminazione...\n");
   
   
