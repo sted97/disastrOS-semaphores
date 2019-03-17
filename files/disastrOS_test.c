@@ -44,7 +44,7 @@ int semaforo_pieno;
 int semaforo_vuoto;
 int semaforo_cs;
 
-void produttore(int semaforo_vuoto, int semaforo_pieno){
+void produttore(){
   printf("%s[PROCESSO %d] Ora divento un PRODUTTORE%s\n\n",COL_YELLOW, disastrOS_getpid(), COL_GRAY);
 
   int i, dato;
@@ -67,7 +67,7 @@ void produttore(int semaforo_vuoto, int semaforo_pieno){
 }
 
 
-void consumatore(int semaforo_vuoto, int semaforo_pieno){
+void consumatore(){
   printf("%s[PROCESSO %d] Ora divento un CONSUMATORE%s\n\n",COL_YELLOW, disastrOS_getpid(), COL_GRAY);
   int i, dato;
   for (i = 0; i <iterazioni; i++){
@@ -108,12 +108,12 @@ void childFunction(void* args){
   disastrOS_printStatus();
 
   if (disastrOS_getpid() % 2 == 0){
-    produttore(semaforo_vuoto, semaforo_pieno);
+    produttore();
     printf("\n");
   }
 
   else{
-    consumatore(semaforo_vuoto, semaforo_pieno);
+    consumatore();
     printf("\n");
 
   }
@@ -208,6 +208,7 @@ int main(int argc, char** argv){
 
 #ifdef ME
 void childFunction(void* args){
+    printf("%s[Processo %d] Apro il semaforo%s\n",COL_GREEN, disastrOS_getpid(), COL_GRAY);
     semaforo_condiviso=disastrOS_semOpen(ID_SEMAFORO_CONDIVISO, 1);
 
     int i;
@@ -225,9 +226,11 @@ void childFunction(void* args){
       printf("%s[Processo %d] Faccio una semPost sul semaforo%s\n",COL_GREEN, disastrOS_getpid(), COL_GRAY);
       disastrOS_printStatus();
     }
+  
+  printf("%s[Processo %d] Chiudo il semaforo%s\n",COL_GREEN, disastrOS_getpid(), COL_GRAY);
+  disastrOS_semClose(semaforo_condiviso);
 
   printf("%s[Processo %d] Terminazione...%s\n", COL_GREEN, disastrOS_getpid(), COL_GRAY);
-
   disastrOS_exit(disastrOS_getpid()); //figlio terminato
 }
 
